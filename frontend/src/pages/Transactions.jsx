@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
+import soundEffects from '../utils/soundEffects'
 
 function Transactions() {
   const { token } = useAuth()
@@ -74,6 +75,13 @@ function Transactions() {
       } else {
         const response = await axios.post(`${API_BASE_URL}/transactions/`, formData, config)
         console.log('Transaction created:', response.data)
+        
+        // Play coin sound effect for income transactions
+        if (formData.type === 'income') {
+          soundEffects.playCoinDrop()
+        } else {
+          soundEffects.playSuccess()
+        }
       }
       
       setFormData({ amount: '', category: '', type: 'expense', description: '' })
@@ -145,15 +153,15 @@ function Transactions() {
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div className="px-4 py-6 sm:px-0">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Transactions</h1>
+          <h1 className="text-3xl font-bold text-slate-800">Transactions</h1>
           <div className="flex items-center space-x-4">
             {/* Debug info */}
-            <div className="text-xs text-slate-400">
+            <div className="text-xs text-slate-600 font-medium">
               Token: {currentToken ? 'Available' : 'Missing'}
             </div>
             <button
               onClick={() => setShowForm(true)}
-              className="bg-gradient-purple hover:opacity-90 text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all duration-200"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all duration-200"
             >
               <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

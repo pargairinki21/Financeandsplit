@@ -1,8 +1,19 @@
 import React, { useState, useEffect, useContext } from 'react'
 import axios from 'axios'
+import { motion } from 'framer-motion';
+import { Bar, Doughnut } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+} from 'chart.js';
+import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js'
-import { Bar, Doughnut } from 'react-chartjs-2'
 import SmartInsights from '../components/SmartInsights';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement)
@@ -154,11 +165,12 @@ function Dashboard() {
   const { totalIncome, totalExpenses, balance } = calculateTotals()
 
   return (
-    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-      <div className="px-4 py-6 sm:px-0">
+    <div className="min-h-screen" style={{backgroundColor: '#fafafa', backgroundImage: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 50%, #f0f0f0 100%)'}}>
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-          <div className="text-sm text-slate-400">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
+          <div className="text-sm text-slate-600 dark:text-slate-400">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
         </div>
@@ -172,12 +184,20 @@ function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
           {/* Available Balance - Main Card */}
           <div className="lg:col-span-2">
-            <div className="glass rounded-2xl p-8 shadow-2xl bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-500/30">
+            <motion.div 
+              className="backdrop-blur-xl bg-white/95 dark:bg-white/90 rounded-2xl p-8 shadow-2xl border border-primary-200/50 cursor-pointer"
+              whileHover={{ 
+                scale: 1.02, 
+                y: -8,
+                boxShadow: "0 25px 50px -12px rgba(34, 197, 94, 0.25)"
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
               <div className="grid grid-cols-3 gap-6 mb-6">
                 {/* Left: Balance Info */}
                 <div className="col-span-2">
-                  <p className="text-slate-400 text-sm font-medium mb-2">Available Balance</p>
-                  <h2 className="text-5xl font-bold text-white mb-2">
+                  <p className="text-slate-600 dark:text-slate-600 text-sm font-medium mb-2">Available Balance</p>
+                  <h2 className="text-5xl font-bold text-slate-800 dark:text-slate-800 mb-2">
                     ₹{balance.toFixed(2)}
                   </h2>
                   <div className="flex items-center space-x-2">
@@ -191,40 +211,40 @@ function Dashboard() {
                 {/* Right: Mini Stats */}
                 <div className="space-y-3">
                   {/* Today's Activity */}
-                  <div className="bg-dark-100/30 rounded-xl p-3">
+                  <div className="bg-slate-100/50 dark:bg-slate-700/30 rounded-xl p-3">
                     <div className="flex items-center space-x-2 mb-2">
                       <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                       <span className="text-yellow-400 text-xs font-medium">Today</span>
                     </div>
-                    <p className="text-white text-lg font-bold">₹{(totalExpenses * 0.1).toFixed(0)}</p>
-                    <p className="text-slate-400 text-xs">spent today</p>
+                    <p className="text-slate-800 dark:text-slate-800 text-lg font-bold">₹{(totalExpenses * 0.1).toFixed(0)}</p>
+                    <p className="text-slate-600 dark:text-slate-600 text-xs">spent today</p>
                   </div>
                   
                   {/* This Week */}
-                  <div className="bg-dark-100/30 rounded-xl p-3">
+                  <div className="bg-slate-100/50 dark:bg-slate-700/30 rounded-xl p-3">
                     <div className="flex items-center space-x-2 mb-2">
                       <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
                       <span className="text-purple-400 text-xs font-medium">This Week</span>
                     </div>
-                    <p className="text-white text-lg font-bold">₹{(totalExpenses * 0.3).toFixed(0)}</p>
-                    <p className="text-slate-400 text-xs">weekly spending</p>
+                    <p className="text-slate-800 dark:text-slate-800 text-lg font-bold">₹{(totalExpenses * 0.3).toFixed(0)}</p>
+                    <p className="text-slate-600 dark:text-slate-600 text-xs">weekly spending</p>
                   </div>
                   
                   {/* Transactions Count */}
-                  <div className="bg-dark-100/30 rounded-xl p-3">
+                  <div className="bg-slate-100/50 dark:bg-slate-700/30 rounded-xl p-3">
                     <div className="flex items-center space-x-2 mb-2">
                       <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
                       <span className="text-cyan-400 text-xs font-medium">Activity</span>
                     </div>
-                    <p className="text-white text-lg font-bold">{recentTransactions.length}</p>
-                    <p className="text-slate-400 text-xs">transactions</p>
+                    <p className="text-slate-800 dark:text-slate-800 text-lg font-bold">{recentTransactions.length}</p>
+                    <p className="text-slate-600 dark:text-slate-600 text-xs">transactions</p>
                   </div>
                 </div>
               </div>
               
               {/* Quick Stats */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-dark-100/50 rounded-xl p-4">
+                <div className="bg-slate-100/50 dark:bg-slate-700/50 rounded-xl p-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center">
                       <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,12 +252,12 @@ function Dashboard() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-slate-400 text-xs">Income</p>
+                      <p className="text-slate-600 dark:text-slate-600 text-xs">Income</p>
                       <p className="text-emerald-400 font-bold">₹{totalIncome.toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-dark-100/50 rounded-xl p-4">
+                <div className="bg-slate-100/50 dark:bg-slate-700/50 rounded-xl p-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
                       <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,19 +265,27 @@ function Dashboard() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-slate-400 text-xs">Expenses</p>
+                      <p className="text-slate-600 dark:text-slate-600 text-xs">Expenses</p>
                       <p className="text-blue-400 font-bold">₹{totalExpenses.toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
           
           {/* Right Side Cards */}
           <div className="lg:col-span-2 grid grid-cols-1 gap-4">
             {/* Total Net Worth */}
-            <div className="glass p-4 rounded-xl shadow-2xl bg-gradient-to-br from-orange-600/20 to-gray-700/30 border border-orange-500/30">
+            <motion.div 
+              className="backdrop-blur-xl bg-white/95 dark:bg-white/90 p-4 rounded-xl shadow-2xl border border-accent-200/50 cursor-pointer"
+              whileHover={{ 
+                scale: 1.05, 
+                y: -6,
+                boxShadow: "0 20px 25px -5px rgba(251, 146, 60, 0.3)"
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,13 +295,21 @@ function Dashboard() {
                 <span className="text-orange-400 text-xs font-medium">+12.5% this month</span>
               </div>
               <div>
-                <p className="text-slate-400 text-xs font-medium mb-1">Total Net Worth</p>
-                <h3 className="text-2xl font-bold text-white mb-1">₹{(balance + 2400).toFixed(2)}</h3>
+                <p className="text-slate-600 text-xs font-medium mb-1">Total Net Worth</p>
+                <h3 className="text-2xl font-bold text-slate-800 mb-1">₹{(balance + 2400).toFixed(2)}</h3>
               </div>
-            </div>
+            </motion.div>
             
             {/* Savings Goal */}
-            <div className="glass p-4 rounded-xl shadow-2xl bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-500/30">
+            <motion.div 
+              className="backdrop-blur-xl bg-white/95 dark:bg-white/90 p-4 rounded-xl shadow-2xl border border-info-200/50 cursor-pointer"
+              whileHover={{ 
+                scale: 1.05, 
+                y: -6,
+                boxShadow: "0 20px 25px -5px rgba(59, 130, 246, 0.3)"
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,16 +319,24 @@ function Dashboard() {
                 <span className="text-cyan-400 text-xs font-medium">{Math.min((balance / 10000) * 100, 100).toFixed(0)}%</span>
               </div>
               <div>
-                <p className="text-slate-400 text-xs font-medium mb-2">Savings Goal</p>
-                <div className="w-full bg-dark-100 rounded-full h-2 mb-2">
+                <p className="text-slate-600 text-xs font-medium mb-2">Savings Goal</p>
+                <div className="w-full bg-slate-200 rounded-full h-2 mb-2">
                   <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full" style={{width: `${Math.min((balance / 10000) * 100, 100)}%`}}></div>
                 </div>
                 <p className="text-cyan-400 text-xs font-medium">₹{balance.toFixed(2)} / ₹10,000</p>
               </div>
-            </div>
+            </motion.div>
             
             {/* Monthly Budget */}
-            <div className="glass p-4 rounded-xl shadow-2xl bg-gradient-to-br from-violet-600/20 to-pink-600/20 border border-violet-500/30">
+            <motion.div 
+              className="backdrop-blur-xl bg-white/95 dark:bg-white/90 p-4 rounded-xl shadow-2xl border border-secondary-200/50 cursor-pointer"
+              whileHover={{ 
+                scale: 1.05, 
+                y: -6,
+                boxShadow: "0 20px 25px -5px rgba(217, 70, 239, 0.3)"
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
               <div className="flex items-center justify-between mb-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -304,14 +348,14 @@ function Dashboard() {
                 </span>
               </div>
               <div>
-                <p className="text-slate-400 text-xs font-medium mb-1">Monthly Budget</p>
-                <h3 className="text-xl font-bold text-white mb-2">₹{totalExpenses.toFixed(2)}</h3>
-                <div className="w-full bg-dark-100 rounded-full h-2">
+                <p className="text-slate-600 text-xs font-medium mb-1">Monthly Budget</p>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">₹{totalExpenses.toFixed(2)}</h3>
+                <div className="w-full bg-slate-200 rounded-full h-2">
                   <div className={`h-2 rounded-full transition-all duration-1000 ${totalExpenses > 50000 ? 'bg-gradient-to-r from-red-400 to-red-500' : 'bg-gradient-to-r from-violet-400 to-pink-500'}`} 
                        style={{width: `${Math.min((totalExpenses / 50000) * 100, 100)}%`}}></div>
                 </div>
               </div>
-            </div>
+            </motion.div>
             
           </div>
         </div>
@@ -319,10 +363,18 @@ function Dashboard() {
         {/* Income Sources & Spending Analysis */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Income Sources */}
-          <div className="lg:col-span-2 glass p-6 rounded-2xl shadow-2xl">
+          <motion.div 
+            className="lg:col-span-2 backdrop-blur-xl bg-white/95 dark:bg-white/90 p-6 rounded-2xl shadow-2xl border border-primary-200/50 cursor-pointer"
+            whileHover={{ 
+              scale: 1.02, 
+              y: -4,
+              boxShadow: "0 20px 25px -5px rgba(34, 197, 94, 0.2)"
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">Income Sources</h2>
-              <div className="text-sm text-slate-400">This Month</div>
+              <h2 className="text-xl font-semibold text-slate-800">Income Sources</h2>
+              <div className="text-sm text-slate-600">This Month</div>
             </div>
             
             <div className="space-y-4">
@@ -331,11 +383,11 @@ function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
-                    <span className="text-slate-300 font-medium">Salary</span>
+                    <span className="text-slate-700 font-medium">Salary</span>
                   </div>
                   <span className="text-emerald-400 font-bold">₹{(totalIncome * 0.7).toFixed(2)}</span>
                 </div>
-                <div className="w-full bg-dark-100 rounded-full h-2">
+                <div className="w-full bg-slate-300 dark:bg-slate-700 rounded-full h-2">
                   <div className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-2 rounded-full" style={{width: '70%'}}></div>
                 </div>
               </div>
@@ -344,11 +396,11 @@ function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                    <span className="text-slate-300 font-medium">Freelance</span>
+                    <span className="text-slate-700 font-medium">Freelance</span>
                   </div>
                   <span className="text-blue-400 font-bold">₹{(totalIncome * 0.2).toFixed(2)}</span>
                 </div>
-                <div className="w-full bg-dark-100 rounded-full h-2">
+                <div className="w-full bg-slate-200 rounded-full h-2">
                   <div className="bg-gradient-to-r from-blue-400 to-blue-500 h-2 rounded-full" style={{width: '20%'}}></div>
                 </div>
               </div>
@@ -357,11 +409,11 @@ function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
-                    <span className="text-slate-300 font-medium">Investments</span>
+                    <span className="text-slate-700 font-medium">Investments</span>
                   </div>
                   <span className="text-purple-400 font-bold">₹{(totalIncome * 0.1).toFixed(2)}</span>
                 </div>
-                <div className="w-full bg-dark-100 rounded-full h-2">
+                <div className="w-full bg-slate-200 rounded-full h-2">
                   <div className="bg-gradient-to-r from-purple-400 to-purple-500 h-2 rounded-full" style={{width: '10%'}}></div>
                 </div>
               </div>
@@ -369,7 +421,7 @@ function Dashboard() {
             
             {/* Monthly Chart */}
             <div className="mt-8">
-              <h3 className="text-lg font-semibold text-white mb-4">Monthly Trend</h3>
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">Monthly Trend</h3>
               <div className="h-48">
                 <Bar data={prepareMonthlyChartData()} options={{ 
                   responsive: true,
@@ -377,7 +429,7 @@ function Dashboard() {
                   plugins: {
                     legend: {
                       labels: {
-                        color: '#e2e8f0',
+                        color: '#475569',
                         font: {
                           size: 12
                         }
@@ -411,12 +463,12 @@ function Dashboard() {
                 }} />
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Spending Categories */}
           <div className="space-y-6">
-            <div className="glass p-6 rounded-2xl shadow-2xl">
-              <h2 className="text-lg font-semibold mb-4 text-white">Spending</h2>
+            <div className="backdrop-blur-xl bg-white/95 dark:bg-white/90 p-6 rounded-2xl shadow-2xl shadow-purple-500/20 border border-primary-200/50">
+              <h2 className="text-lg font-semibold mb-4 text-slate-800">Spending</h2>
               
               {/* Spending Categories with Progress Circles */}
               <div className="space-y-4">
@@ -432,8 +484,8 @@ function Dashboard() {
                           <div className={`w-2 h-2 ${colors[index].replace('text-', 'bg-')} rounded-full`}></div>
                         </div>
                         <div>
-                          <p className="text-slate-300 font-medium text-sm">{category.category}</p>
-                          <p className="text-slate-400 text-xs">{percentage}% of spending</p>
+                          <p className="text-slate-700 font-medium text-sm">{category.category}</p>
+                          <p className="text-slate-600 text-xs">{percentage}% of spending</p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -459,27 +511,27 @@ function Dashboard() {
                     }} />
                   </div>
                 ) : (
-                  <p className="text-slate-400 text-center py-8 text-sm">No expense data</p>
+                  <p className="text-slate-600 text-center py-8 text-sm">No expense data</p>
                 )}
               </div>
             </div>
             
             {/* Notifications */}
-            <div className="glass p-6 rounded-2xl shadow-2xl">
-              <h3 className="text-lg font-semibold mb-4 text-white">Notifications</h3>
+            <div className="backdrop-blur-xl bg-white/95 dark:bg-white/90 p-6 rounded-2xl shadow-2xl shadow-orange-500/20 border border-primary-200/50">
+              <h3 className="text-lg font-semibold mb-4 text-slate-800">Notifications</h3>
               <div className="space-y-3">
                 <div className="flex items-start space-x-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2"></div>
                   <div>
                     <p className="text-yellow-400 text-sm font-medium">Budget Alert</p>
-                    <p className="text-slate-400 text-xs">You've spent 80% of your monthly budget</p>
+                    <p className="text-slate-600 text-xs">You've spent 80% of your monthly budget</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
                   <div className="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
                   <div>
                     <p className="text-blue-400 text-sm font-medium">Investment Tip</p>
-                    <p className="text-slate-400 text-xs">Consider diversifying your portfolio</p>
+                    <p className="text-slate-600 text-xs">Consider diversifying your portfolio</p>
                   </div>
                 </div>
               </div>
@@ -488,39 +540,39 @@ function Dashboard() {
         </div>
 
         {/* Recent Transactions */}
-        <div className="glass shadow-2xl rounded-xl">
+        <div className="backdrop-blur-xl bg-white/95 dark:bg-white/90 shadow-2xl shadow-indigo-500/20 rounded-xl border border-primary-200/50">
           <div className="px-6 py-6">
-            <h2 className="text-xl font-semibold mb-6 text-white">Recent Transactions</h2>
+            <h2 className="text-xl font-semibold mb-6 text-slate-800">Recent Transactions</h2>
             {recentTransactions.length > 0 ? (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-600">
-                  <thead className="bg-dark-100/50">
+                <table className="min-w-full divide-y divide-slate-200">
+                  <thead className="bg-slate-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                         Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                         Description
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                         Amount
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-600">
+                  <tbody className="divide-y divide-slate-200">
                     {recentTransactions.map((transaction) => (
-                      <tr key={transaction.id} className="hover:bg-dark-100/30 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                      <tr key={transaction.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
                           {new Date(transaction.date).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
                           {transaction.description || 'No description'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
-                          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-purple-500/20 text-purple-300">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
+                          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-purple-500/20 text-purple-600">
                             {transaction.category}
                           </span>
                         </td>
@@ -535,9 +587,10 @@ function Dashboard() {
                 </table>
               </div>
             ) : (
-              <p className="text-slate-400 text-center py-8">No transactions found</p>
+              <p className="text-slate-600 text-center py-8">No transactions found</p>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>

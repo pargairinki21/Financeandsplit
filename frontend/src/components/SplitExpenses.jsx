@@ -5,6 +5,22 @@ const SplitExpenses = () => {
   const [balances, setBalances] = useState([]);
   const [expenses, setExpenses] = useState([]);
 
+  const deleteGroup = (groupId) => {
+    // Remove group from localStorage
+    const savedGroups = JSON.parse(localStorage.getItem('splitGroups') || '[]');
+    const updatedGroups = savedGroups.filter(group => group.id !== groupId);
+    localStorage.setItem('splitGroups', JSON.stringify(updatedGroups));
+    
+    // Remove related expenses
+    const savedExpenses = JSON.parse(localStorage.getItem('splitExpenses') || '[]');
+    const updatedExpenses = savedExpenses.filter(expense => expense.groupId !== groupId);
+    localStorage.setItem('splitExpenses', JSON.stringify(updatedExpenses));
+    
+    // Trigger updates
+    window.dispatchEvent(new CustomEvent('groupsUpdated'));
+    window.dispatchEvent(new CustomEvent('expensesUpdated'));
+  };
+
   useEffect(() => {
     // Load groups and expenses from localStorage
     const loadData = () => {
@@ -16,6 +32,8 @@ const SplitExpenses = () => {
       
       // Calculate individual balances
       const balanceMap = new Map();
+      let totalOwedToYou = 0;
+      let totalYouOwe = 0;
       
       savedExpenses.forEach(expense => {
         const group = savedGroups.find(g => g.id == expense.groupId);
@@ -58,7 +76,25 @@ const SplitExpenses = () => {
         });
       });
       
-      setBalances(Array.from(balanceMap.values()));
+      // Calculate totals from final balances
+      const finalBalances = Array.from(balanceMap.values());
+      finalBalances.forEach(balance => {
+        if (balance.to === 'You') {
+          totalOwedToYou += balance.amount;
+        } else if (balance.from === 'You') {
+          totalYouOwe += balance.amount;
+        }
+      });
+      
+      setBalances(finalBalances);
+      
+      // Store totals for balance cards
+      window.splitTotals = {
+        owedToYou: totalOwedToYou,
+        youOwe: totalYouOwe,
+        netBalance: totalOwedToYou - totalYouOwe,
+        activeGroups: savedGroups.length
+      };
     };
 
     loadData();
@@ -92,12 +128,6 @@ const SplitExpenses = () => {
             <p className="text-slate-400 text-sm">Expense splitting made simple</p>
           </div>
         </div>
-        <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          <span>New Group</span>
-        </button>
       </div>
 
       {/* Balance Overview */}
@@ -112,8 +142,12 @@ const SplitExpenses = () => {
             </div>
             <span className="text-emerald-400 text-xs font-semibold">NET BALANCE</span>
           </div>
-          <h3 className="text-2xl font-bold text-white mb-1">₹{(1250.50 - 890.25).toFixed(2)}</h3>
-          <p className="text-emerald-400 text-sm">You are owed overall</p>
+          <h3 className="text-2xl font-bold text-white mb-1">
+            ₹{window.splitTotals ? window.splitTotals.netBalance.toFixed(2) : '0.00'}
+          </h3>
+          <p className="text-emerald-400 text-sm">
+            {window.splitTotals && window.splitTotals.netBalance >= 0 ? 'You are owed overall' : 'You owe overall'}
+          </p>
         </div>
 
         {/* Amount Owed */}
@@ -126,8 +160,12 @@ const SplitExpenses = () => {
             </div>
             <span className="text-blue-400 text-xs font-semibold">OWED TO YOU</span>
           </div>
-          <h3 className="text-2xl font-bold text-white mb-1">₹1,250.50</h3>
-          <p className="text-blue-400 text-sm">From 2 groups</p>
+          <h3 className="text-2xl font-bold text-white mb-1">
+            ₹{window.splitTotals ? window.splitTotals.owedToYou.toFixed(2) : '0.00'}
+          </h3>
+          <p className="text-blue-400 text-sm">
+            From {window.splitTotals ? window.splitTotals.activeGroups : 0} groups
+          </p>
         </div>
 
         {/* Amount Owing */}
@@ -140,8 +178,12 @@ const SplitExpenses = () => {
             </div>
             <span className="text-orange-400 text-xs font-semibold">YOU OWE</span>
           </div>
-          <h3 className="text-2xl font-bold text-white mb-1">₹890.25</h3>
-          <p className="text-orange-400 text-sm">To 2 groups</p>
+          <h3 className="text-2xl font-bold text-white mb-1">
+            ₹{window.splitTotals ? window.splitTotals.youOwe.toFixed(2) : '0.00'}
+          </h3>
+          <p className="text-orange-400 text-sm">
+            To {window.splitTotals ? window.splitTotals.activeGroups : 0} groups
+          </p>
         </div>
       </div>
 
@@ -162,9 +204,20 @@ const SplitExpenses = () => {
                     <h4 className="font-semibold text-white text-sm mb-1">{group.name}</h4>
                     <p className="text-slate-400 text-xs">{group.members.length} members</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-emerald-400 font-bold text-sm">+₹{group.totalOwed.toFixed(2)}</p>
-                    <p className="text-orange-400 font-bold text-xs">-₹{group.totalOwing.toFixed(2)}</p>
+                  <div className="flex items-center space-x-2">
+                    <div className="text-right">
+                      <p className="text-emerald-400 font-bold text-sm">+₹{group.totalOwed.toFixed(2)}</p>
+                      <p className="text-orange-400 font-bold text-xs">-₹{group.totalOwing.toFixed(2)}</p>
+                    </div>
+                    <button
+                      onClick={() => deleteGroup(group.id)}
+                      className="text-red-400 hover:text-red-300 p-1 rounded transition-colors"
+                      title="Delete group"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
                 

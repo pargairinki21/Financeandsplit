@@ -117,11 +117,11 @@ const SmartInsights = ({ transactions }) => {
 
   if (transactions.length === 0) {
     return (
-      <div className="glass p-6 rounded-2xl shadow-2xl">
+      <div className="backdrop-blur-xl bg-white/95 dark:bg-white/90 p-3 rounded-xl shadow-lg shadow-blue-500/20 border border-slate-200/50">
         <div className="text-center py-8">
           <div className="text-6xl mb-4">🤖</div>
-          <h3 className="text-xl font-semibold text-white mb-2">AI Insights Coming Soon!</h3>
-          <p className="text-slate-400">Add some transactions to unlock smart financial insights</p>
+          <h3 className="text-xl font-semibold text-slate-800 mb-2">AI Insights Coming Soon!</h3>
+          <p className="text-slate-600">Add some transactions to unlock smart financial insights</p>
         </div>
       </div>
     );
@@ -130,7 +130,7 @@ const SmartInsights = ({ transactions }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
       {/* Financial Health Score - Compact */}
-      <div className="glass p-3 rounded-xl shadow-lg bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20">
+      <div className="backdrop-blur-xl bg-white/95 dark:bg-white/90 p-3 rounded-xl shadow-lg shadow-emerald-500/20 border border-emerald-500/20">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-1">
             <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
@@ -150,7 +150,7 @@ const SmartInsights = ({ transactions }) => {
                 stroke="currentColor"
                 strokeWidth="6"
                 fill="transparent"
-                className="text-slate-700"
+                className="text-slate-300"
               />
               {/* Progress Circle */}
               <circle
@@ -175,7 +175,7 @@ const SmartInsights = ({ transactions }) => {
             
             {/* Score Text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-lg font-bold text-white">{financialScore}</span>
+              <span className="text-lg font-bold text-slate-800">{financialScore}</span>
             </div>
           </div>
           
@@ -188,7 +188,7 @@ const SmartInsights = ({ transactions }) => {
             }`}>
               {financialScore >= 80 ? 'Excellent!' : financialScore >= 60 ? 'Good!' : 'Keep Going!'}
             </p>
-            <p className="text-slate-400 text-xs">
+            <p className="text-slate-600 text-xs">
               {financialScore >= 80 ? 'You\'re a financial rockstar!' : financialScore >= 60 ? 'You\'re on the right track!' : 'Small steps lead to big wins!'}
             </p>
           </div>
@@ -196,7 +196,7 @@ const SmartInsights = ({ transactions }) => {
       </div>
 
       {/* Smart Insights - Compact */}
-      <div className="lg:col-span-3 glass p-3 rounded-xl shadow-lg bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700/50">
+      <div className="lg:col-span-3 backdrop-blur-xl bg-white/95 dark:bg-white/90 p-3 rounded-xl shadow-lg shadow-blue-500/20 border border-slate-200/50">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -205,7 +205,7 @@ const SmartInsights = ({ transactions }) => {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">Financial Intelligence</h3>
+              <h3 className="text-sm font-bold text-slate-800">Financial Intelligence</h3>
             </div>
           </div>
           <div className="flex items-center space-x-1 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
@@ -218,7 +218,7 @@ const SmartInsights = ({ transactions }) => {
           {insights.map((insight, index) => (
             <div
               key={insight.id}
-              className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-2 hover:bg-slate-800/60 transition-all duration-300"
+              className="bg-slate-50 border border-slate-200 rounded-lg p-2 hover:bg-slate-100 transition-all duration-300"
               style={{
                 animationDelay: `${index * 100}ms`,
                 animation: 'slideInUp 0.4s ease-out forwards'
@@ -230,7 +230,7 @@ const SmartInsights = ({ transactions }) => {
                     <span className="text-xs">{insight.icon}</span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-white text-xs">{insight.title}</h4>
+                    <h4 className="font-semibold text-slate-800 text-xs">{insight.title}</h4>
                   </div>
                 </div>
                 <div className="text-right">
@@ -241,7 +241,7 @@ const SmartInsights = ({ transactions }) => {
               <p className={`${insight.color} font-medium text-xs mb-2`}>{insight.message}</p>
               
               {/* Compact Progress Bar */}
-              <div className="w-full bg-slate-700/50 rounded-full h-1.5">
+              <div className="w-full bg-slate-200 rounded-full h-1.5">
                 <div
                   className={`h-1.5 rounded-full transition-all duration-1000 ease-out`}
                   style={{
@@ -267,7 +267,7 @@ const SmartInsights = ({ transactions }) => {
             </div>
             <div>
               <h4 className="font-semibold text-indigo-400 text-xs mb-1">Tip</h4>
-              <p className="text-slate-300 text-xs">
+              <p className="text-slate-600 text-xs">
                 Try the 50/30/20 rule: 50% needs, 30% wants, 20% savings!
               </p>
             </div>
