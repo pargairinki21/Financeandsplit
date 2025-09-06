@@ -23,16 +23,18 @@ function Dashboard() {
   const [categoryData, setCategoryData] = useState([])
   const [recentTransactions, setRecentTransactions] = useState([])
   const [loading, setLoading] = useState(true)
-  const { token } = useContext(AuthContext)
+  const { token, checkAuthAndRedirect } = useContext(AuthContext)
 
   const API_BASE_URL = 'http://localhost:8000'
 
   useEffect(() => {
-    fetchDashboardData()
+    if (checkAuthAndRedirect()) {
+      fetchDashboardData()
+    }
   }, [])
 
   const fetchDashboardData = async () => {
-    if (!token) {
+    if (!checkAuthAndRedirect()) {
       setLoading(false)
       return
     }
@@ -55,6 +57,9 @@ function Dashboard() {
       setRecentTransactions(transactionsRes.data)
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
+      if (error.response?.status === 401) {
+        // Session expired, redirect handled by interceptor
+      }
     } finally {
       setLoading(false)
     }
@@ -162,15 +167,16 @@ function Dashboard() {
     )
   }
 
+
   const { totalIncome, totalExpenses, balance } = calculateTotals()
 
   return (
-    <div className="min-h-screen" style={{backgroundColor: '#fafafa', backgroundImage: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 50%, #f0f0f0 100%)'}}>
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen relative" style={{backgroundColor: '#fafafa', backgroundImage: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 50%, #f0f0f0 100%)'}}>
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 relative z-10">
         <div className="px-4 py-6 sm:px-0">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-          <div className="text-sm text-slate-600 dark:text-slate-400">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
+          <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
         </div>
@@ -181,11 +187,11 @@ function Dashboard() {
         </div>
 
         {/* Main Balance Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
           {/* Available Balance - Main Card */}
-          <div className="lg:col-span-2">
+          <div className="md:col-span-2 lg:col-span-2">
             <motion.div 
-              className="backdrop-blur-xl bg-white/95 dark:bg-white/90 rounded-2xl p-8 shadow-2xl border border-primary-200/50 cursor-pointer"
+              className="backdrop-blur-xl bg-white/95 dark:bg-white/90 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-2xl border border-primary-200/50 cursor-pointer"
               whileHover={{ 
                 scale: 1.02, 
                 y: -8,
@@ -193,17 +199,17 @@ function Dashboard() {
               }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              <div className="grid grid-cols-3 gap-6 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-4 lg:mb-6">
                 {/* Left: Balance Info */}
                 <div className="col-span-2">
                   <p className="text-slate-600 dark:text-slate-600 text-sm font-medium mb-2">Available Balance</p>
-                  <h2 className="text-5xl font-bold text-slate-800 dark:text-slate-800 mb-2">
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-800 dark:text-slate-800 mb-2">
                     ₹{balance.toFixed(2)}
                   </h2>
                   <div className="flex items-center space-x-2">
                     <div className={`w-2 h-2 rounded-full ${balance >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`}></div>
                     <span className={`text-sm font-medium ${balance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {balance >= 0 ? '+' : ''}${((balance / (totalIncome || 1)) * 100).toFixed(1)}% from last month
+                      {balance >= 0 ? '+' : ''}{((balance / (totalIncome || 1)) * 100).toFixed(1)}% from last month
                     </span>
                   </div>
                 </div>
@@ -296,7 +302,7 @@ function Dashboard() {
               </div>
               <div>
                 <p className="text-slate-600 text-xs font-medium mb-1">Total Net Worth</p>
-                <h3 className="text-2xl font-bold text-slate-800 mb-1">₹{(balance + 2400).toFixed(2)}</h3>
+                <h3 className="text-2xl font-bold text-slate-800 mb-1">₹{balance.toFixed(2)}</h3>
               </div>
             </motion.div>
             
@@ -360,6 +366,7 @@ function Dashboard() {
           </div>
         </div>
 
+
         {/* Income Sources & Spending Analysis */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Income Sources */}
@@ -378,45 +385,40 @@ function Dashboard() {
             </div>
             
             <div className="space-y-4">
-              {/* Mock Income Sources with Bar Visualization */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
-                    <span className="text-slate-700 font-medium">Salary</span>
-                  </div>
-                  <span className="text-emerald-400 font-bold">₹{(totalIncome * 0.7).toFixed(2)}</span>
+              {/* Real Income Sources based on actual transactions */}
+              {categoryData.filter(item => item.type === 'income').length > 0 ? (
+                categoryData.filter(item => item.type === 'income').map((incomeCategory, index) => {
+                  const colors = [
+                    { bg: 'bg-emerald-400', gradient: 'from-emerald-400 to-emerald-500', text: 'text-emerald-400' },
+                    { bg: 'bg-blue-400', gradient: 'from-blue-400 to-blue-500', text: 'text-blue-400' },
+                    { bg: 'bg-purple-400', gradient: 'from-purple-400 to-purple-500', text: 'text-purple-400' },
+                    { bg: 'bg-orange-400', gradient: 'from-orange-400 to-orange-500', text: 'text-orange-400' },
+                    { bg: 'bg-pink-400', gradient: 'from-pink-400 to-pink-500', text: 'text-pink-400' }
+                  ]
+                  const color = colors[index % colors.length]
+                  const percentage = ((incomeCategory.total / totalIncome) * 100).toFixed(0)
+                  
+                  return (
+                    <div key={incomeCategory.category} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-3 h-3 ${color.bg} rounded-full`}></div>
+                          <span className="text-slate-700 font-medium capitalize">{incomeCategory.category}</span>
+                        </div>
+                        <span className={`${color.text} font-bold`}>₹{incomeCategory.total.toFixed(2)}</span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-2">
+                        <div className={`bg-gradient-to-r ${color.gradient} h-2 rounded-full`} style={{width: `${percentage}%`}}></div>
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-slate-600 text-sm">No income sources found</p>
+                  <p className="text-slate-500 text-xs mt-1">Add income transactions to see your income breakdown</p>
                 </div>
-                <div className="w-full bg-slate-300 dark:bg-slate-700 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-2 rounded-full" style={{width: '70%'}}></div>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                    <span className="text-slate-700 font-medium">Freelance</span>
-                  </div>
-                  <span className="text-blue-400 font-bold">₹{(totalIncome * 0.2).toFixed(2)}</span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-blue-400 to-blue-500 h-2 rounded-full" style={{width: '20%'}}></div>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
-                    <span className="text-slate-700 font-medium">Investments</span>
-                  </div>
-                  <span className="text-purple-400 font-bold">₹{(totalIncome * 0.1).toFixed(2)}</span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-purple-400 to-purple-500 h-2 rounded-full" style={{width: '10%'}}></div>
-                </div>
-              </div>
+              )}
             </div>
             
             {/* Monthly Chart */}
@@ -579,7 +581,7 @@ function Dashboard() {
                         <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                           transaction.type === 'income' ? 'text-emerald-400' : 'text-blue-400'
                         }`}>
-                          {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                          {transaction.type === 'income' ? '+' : '-'}₹{transaction.amount.toFixed(2)}
                         </td>
                       </tr>
                     ))}

@@ -19,6 +19,23 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      // Set up axios interceptor for handling 401 errors
+      const interceptor = axios.interceptors.response.use(
+        (response) => response,
+        (error) => {
+          if (error.response?.status === 401) {
+            // Token expired or invalid
+            logout()
+            // Redirect to login using window.location instead of navigate
+            window.location.href = '/login'
+          }
+          return Promise.reject(error)
+        }
+      )
+      
+      return () => {
+        axios.interceptors.response.eject(interceptor)
+      }
     } else {
       delete axios.defaults.headers.common['Authorization']
     }
@@ -72,13 +89,27 @@ export function AuthProvider({ children }) {
     delete axios.defaults.headers.common['Authorization']
   }
 
+  const isAuthenticated = () => {
+    return !!token
+  }
+
+  const checkAuthAndRedirect = () => {
+    if (!token) {
+      window.location.href = '/login'
+      return false
+    }
+    return true
+  }
+
   const value = {
     token,
     user,
     login,
     signup,
     logout,
-    loading
+    loading,
+    isAuthenticated,
+    checkAuthAndRedirect
   }
 
   return (

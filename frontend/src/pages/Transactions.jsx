@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import soundEffects from '../utils/soundEffects'
 
 function Transactions() {
-  const { token } = useAuth()
+  const { token, checkAuthAndRedirect } = useAuth()
   const [transactions, setTransactions] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState(null)
@@ -20,11 +20,13 @@ function Transactions() {
   const API_BASE_URL = 'http://localhost:8000'
 
   useEffect(() => {
-    fetchTransactions()
+    if (checkAuthAndRedirect()) {
+      fetchTransactions()
+    }
   }, [token])
 
   const fetchTransactions = async () => {
-    if (!token) {
+    if (!checkAuthAndRedirect()) {
       setLoading(false)
       return
     }
@@ -39,7 +41,11 @@ function Transactions() {
       setError('')
     } catch (error) {
       console.error('Error fetching transactions:', error)
-      setError('Failed to fetch transactions')
+      if (error.response?.status === 401) {
+        setError('Session expired. Please login again.')
+      } else {
+        setError('Failed to fetch transactions')
+      }
     } finally {
       setLoading(false)
     }
@@ -49,10 +55,7 @@ function Transactions() {
     e.preventDefault()
     setError('')
     
-    // Get fresh token from localStorage
-    const currentToken = token || localStorage.getItem('token')
-    
-    if (!currentToken) {
+    if (!checkAuthAndRedirect()) {
       setError('Please log in to add transactions')
       return
     }
@@ -62,7 +65,7 @@ function Transactions() {
     try {
       const config = {
         headers: {
-          'Authorization': `Bearer ${currentToken}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       }
@@ -90,8 +93,11 @@ function Transactions() {
       fetchTransactions()
     } catch (error) {
       console.error('Error saving transaction:', error)
-      console.error('Error response:', error.response)
-      setError(error.response?.data?.detail || 'Failed to save transaction')
+      if (error.response?.status === 401) {
+        setError('Session expired. Please login again.')
+      } else {
+        setError(error.response?.data?.detail || 'Failed to save transaction')
+      }
     }
   }
 
@@ -107,7 +113,7 @@ function Transactions() {
   }
 
   const handleDelete = async (id) => {
-    if (!token) {
+    if (!checkAuthAndRedirect()) {
       setError('Please log in to delete transactions')
       return
     }
@@ -121,7 +127,11 @@ function Transactions() {
       fetchTransactions()
     } catch (error) {
       console.error('Error deleting transaction:', error)
-      setError('Failed to delete transaction')
+      if (error.response?.status === 401) {
+        setError('Session expired. Please login again.')
+      } else {
+        setError('Failed to delete transaction')
+      }
     }
   }
 
@@ -147,11 +157,12 @@ function Transactions() {
   }
 
   // Debug token status
-  const currentToken = token || localStorage.getItem('token')
+  const currentToken = token
   
   return (
-    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-      <div className="px-4 py-6 sm:px-0">
+    <div className="min-h-screen relative" style={{backgroundColor: '#fafafa', backgroundImage: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 50%, #f0f0f0 100%)'}}>
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 relative z-10">
+        <div className="px-4 py-6 sm:px-0">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-slate-800">Transactions</h1>
           <div className="flex items-center space-x-4">
@@ -367,6 +378,7 @@ function Transactions() {
               <p className="text-slate-400 text-sm mt-2">Add your first transaction to get started</p>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>
