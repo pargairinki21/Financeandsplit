@@ -2,6 +2,11 @@
 
 A full-stack web application for managing personal finances with React + Vite frontend and FastAPI + PostgreSQL backend.
 
+## 🌐 Live Demo
+
+**Frontend:** [https://financeandsplit-pryt.vercel.app](https://financeandsplit-pryt.vercel.app)  
+**Backend API:** [https://financeandsplit-1.onrender.com](https://financeandsplit-1.onrender.com)
+
 ## 🚀 Features
 
 - **User Authentication**: Secure JWT-based signup and login
