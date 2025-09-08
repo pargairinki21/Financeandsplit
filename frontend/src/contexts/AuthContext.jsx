@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const API_BASE_URL = process.env.NODE_ENV === 'production' ? 'http://backend:8000' : 'http://localhost:8000'
+  const API_BASE_URL = process.env.NODE_ENV === 'production' ? 'https://financeandsplit-1.onrender.com' : 'http://localhost:8000'
 
   useEffect(() => {
     if (token) {

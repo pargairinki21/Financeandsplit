@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = process.env.NODE_ENV === 'production' ? 'https://financeandsplit-1.onrender.com' : 'http://localhost:8000';
 
 // Create axios instance with default config
 const api = axios.create({
